@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trawl Intensity</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    
+    <style>
+      html, body, #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        font-family: Lato, sans-serif;
+
+      }
+        a{
+            color:#8c2d04;
+        }
+        
+        header {
+            padding: 6px 10%;
+        }
+        #title {
+            position: absolute;
+            z-index: 100;
+            top: 10px;
+            right: 20px;
+            height: 100px;
+            width: 300px;
+            background: rgba(245, 245, 245, 0.6);
+            border-radius: 5px;
+        }
+        #description {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            height:250px;
+            width: 300px;
+            background: whitesmoke;
+            background: rgba(245, 245, 245, 0.6);
+            overflow-y: scroll;
+            border-radius: 5px;
+
+        }
+        
+        h1 {
+            text-align: center;
+            padding: 8px 15px;
+            margin: 0;
+            color: rgb(25,25,25);
+            font-size: 1.4em;
+        }
+        h2 {
+            font-size: 1.2em;    
+        }
+        h3 {
+            font-size: 1em;    
+        }
+        #description p {
+            margin: 8px 0 4px; 
+            padding: 0 25px 0 15px;
+            color: #3d3d3d;
+            text-align: right;
+            font-size: 0.9em; 
+        }
+        #description p:after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        div.cartodb-legend {
+            background: whitesmoke;
+            box-shadow: none;
+        }
+        
+    </style>
+</head>
+    
+<body>
+    
+    <div id="map"></div>
+    
+    <!--  Title Div  -->
+    <div id="title">
+        <h1>Commercial Bottom Trawl<br> Fishing Intensity<br> 2006-2010</h1>
+    </div>
+
+    
+    <!-- Description Div   -->   
+    <div id="description">
+        <h2>About this map</h2>
+        <p>These data were developed to review area closures to commercial fishing on the West Coast.  Essential Fishe Habitat (EFH) Conservation Areas were closed to fishing in 2006 to protect important habitat for groundfish (rockfish, flatfish, and others). The data were developed by Curt Whitmire and Marlene Bellman at NOAA, National Marine Fisheries Service</p>
+        <p>Source: <a href="http://efh-catalog.coas.oregonstate.edu/effort/">Essential Fish Habitat Catalog</a></p>
+      
+    </div>
+    
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+
+    <script type="cartocss/html" id="intensity-after-styles">
+    /** choropleth visualization **/
+    
+        #bottomtrawl_intensity_1km {
+            line-width: 0;
+            line-opacity: 0;
+        }    
+        #bottomtrawl_intensity_1km [ after <= 221.509] {
+            polygon-fill: #8c2d04;
+        }
+        #bottomtrawl_intensity_1km [ after <= 94.227] {
+           polygon-fill: #d94801;
+        }
+        #bottomtrawl_intensity_1km [ after <= 57.25] {
+           polygon-fill: #f16913;
+        }
+        #bottomtrawl_intensity_1km [ after <= 46.737] {
+           polygon-fill: #fd8d3c;
+        }
+        #bottomtrawl_intensity_1km [ after <= 28.501] {
+           polygon-fill: #fdae6b;
+        }
+        #bottomtrawl_intensity_1km [ after <= 13.049] {
+           polygon-fill: #fdd0a2;
+        }
+        #bottomtrawl_intensity_1km [ after <= 12.873] {
+           polygon-fill: #feedde;
+        }
+    </script>
+    
+    <script>
+        
+    // instantiate our map
+    var map = new L.Map("map", {
+        center: [42.2,-122],  // note that the coordinates are back to lat/lon
+        zoom: 6
+    });
+        
+    var Esri_OceanBasemap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri',
+	maxZoom: 13
+    }).addTo(map);
+
+    // CartoDB sublayer(s) using SQL and chloropleth styles
+    var sourceObject = {
+        user_name: 'cybersea',
+        type: 'cartodb',
+        sublayers: [
+            {
+                sql: "SELECT * FROM bottomtrawl_intensity_1km",
+                cartocss: $("#intensity-after-styles").text()
+            }  
+        ]
+    }
+    
+    // Options for the CartoDB layer
+    mapOptions = {
+        cartodb_logo: false,
+        legends: true
+    }
+
+    // Create the layer and legend
+    cartodb.createLayer(map, sourceObject, mapOptions).addTo(map)
+    .done(function(layer){
+        var legend = new cdb.geo.ui.Legend.Density({
+            type: "density",
+            title: "Relative Trawling Intensity",
+            left: "Low", right: "High", 
+            colors: [ "#feedde", "#fdd0a2", "#fdae6b", "#fd8d3c", "#f16913" , "#d94801", "#8c2d04"]
+
+         });
+         $('#map').append(legend.render().el);
+    });
+          
+
+  
+        
+    </script>
+</body>
+</html>
